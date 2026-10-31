@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "nombre": "kevin",
+    "email": "kev@gmail.com",
+    "bootcamp": "data base"
+  },
+  {
+    "id": 2,
+    "nombre": "ariane",
+    "email": "aaa@gmail.com",
+    "bootcamp": "base de base"
+  }
+]

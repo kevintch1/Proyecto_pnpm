@@ -1,5 +1,7 @@
 
 import { Router } from "express";
+import { readFile, writeFile } from "fs/promises";
+import path from "path";
 
 const router: Router = Router();
 
@@ -12,6 +14,41 @@ interface Estudiante {
 
 const estudiantes: Estudiante[] = [];
 let siguienteId = 1;
+
+const DB_PATH = path.join(process.cwd(), "database.json");
+
+// GUARDAR estudiantes en database.json
+async function guardarEstudiantes() {
+    await writeFile(
+        DB_PATH,
+        JSON.stringify(estudiantes, null, 2),
+        "utf-8"
+    );
+}
+
+// CARGAR estudiantes al iniciar el servidor
+export async function cargarEstudiantes() {
+    try {
+        const datos = await readFile(DB_PATH, "utf-8");
+        const guardados: Estudiante[] = JSON.parse(datos);
+
+        estudiantes.length = 0;
+        estudiantes.push(...guardados);
+
+        siguienteId = estudiantes.length > 0
+            ? Math.max(...estudiantes.map(e => e.id)) + 1
+            : 1;
+
+        console.log("Estudiantes cargados correctamente");
+    } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+            await guardarEstudiantes();
+            console.log("Archivo database.json creado");
+        } else {
+            throw error;
+        }
+    }
+}
 
 // GET: mostrar todos los estudiantes
 router.get("/", (req, res) => {
@@ -26,14 +63,13 @@ router.get("/", (req, res) => {
     // }
     // #swagger.responses[200] = {
     //     description: 'Lista de estudiantes obtenida correctamente'
-    // }    
+    // }
     const bootcamp = req.query.bootcamp;
 
     if (typeof bootcamp === "string") {
         const resultado = estudiantes.filter(
-            (estudiante) => estudiante.bootcamp === bootcamp
+            estudiante => estudiante.bootcamp === bootcamp
         );
-
         return res.json(resultado);
     }
 
@@ -60,6 +96,7 @@ router.get("/:id", (req, res) => {
     // #swagger.responses[404] = {
     //     description: 'Estudiante no encontrado'
     // }
+
     const id = Number(req.params.id);
 
     if (!Number.isInteger(id) || id <= 0) {
@@ -68,7 +105,7 @@ router.get("/:id", (req, res) => {
         });
     }
 
-    const estudiante = estudiantes.find((e) => e.id === id);
+    const estudiante = estudiantes.find(e => e.id === id);
 
     if (!estudiante) {
         return res.status(404).json({
@@ -80,7 +117,7 @@ router.get("/:id", (req, res) => {
 });
 
 // POST: registrar estudiante
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
     // #swagger.tags = ['Estudiantes']
     // #swagger.summary = 'Registrar estudiante'
     // #swagger.description = 'Registra un nuevo estudiante en el sistema.'
@@ -100,6 +137,7 @@ router.post("/", (req, res) => {
     // #swagger.responses[400] = {
     //     description: 'El email es obligatorio'
     // }
+
     const { nombre, email, bootcamp } = req.body;
 
     if (!email) {
@@ -118,11 +156,13 @@ router.post("/", (req, res) => {
     estudiantes.push(nuevoEstudiante);
     siguienteId++;
 
+    await guardarEstudiantes();
+
     res.status(201).json(nuevoEstudiante);
 });
 
 // PUT: actualizar estudiante
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
     // #swagger.tags = ['Estudiantes']
     // #swagger.summary = 'Actualizar estudiante'
     // #swagger.description = 'Actualiza los datos de un estudiante utilizando su ID.'
@@ -148,8 +188,9 @@ router.put("/:id", (req, res) => {
     // #swagger.responses[404] = {
     //     description: 'Estudiante no encontrado'
     // }
+
     const id = Number(req.params.id);
-    const estudiante = estudiantes.find((e) => e.id === id);
+    const estudiante = estudiantes.find(e => e.id === id);
 
     if (!estudiante) {
         return res.status(404).json({
@@ -163,11 +204,13 @@ router.put("/:id", (req, res) => {
     estudiante.email = email;
     estudiante.bootcamp = bootcamp;
 
+    await guardarEstudiantes();
+
     res.status(200).json(estudiante);
 });
 
 // DELETE: eliminar estudiante
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
     // #swagger.tags = ['Estudiantes']
     // #swagger.summary = 'Eliminar estudiante'
     // #swagger.description = 'Elimina un estudiante utilizando su ID.'
@@ -183,8 +226,9 @@ router.delete("/:id", (req, res) => {
     // #swagger.responses[404] = {
     //     description: 'Estudiante no encontrado'
     // }
+
     const id = Number(req.params.id);
-    const indice = estudiantes.findIndex((e) => e.id === id);
+    const indice = estudiantes.findIndex(e => e.id === id);
 
     if (indice === -1) {
         return res.status(404).json({
@@ -193,6 +237,8 @@ router.delete("/:id", (req, res) => {
     }
 
     estudiantes.splice(indice, 1);
+
+    await guardarEstudiantes();
 
     res.status(200).json({
         mensaje: "Estudiante eliminado correctamente"
