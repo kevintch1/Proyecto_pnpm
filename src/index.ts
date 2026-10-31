@@ -3,11 +3,10 @@ import estudiantesRouter from "./routes/estudiantes";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import swaggerOutput from "./swagger_output.json";
-
 const app = express();
-
 // Leer el puerto desde .env
 const PORT = process.env.PORT ?? 3000;
+
 
 //middleware Ccours
 app.use(cors());

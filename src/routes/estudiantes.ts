@@ -1,7 +1,9 @@
 
+
 import { Router } from "express";
 
 const router: Router = Router();
+
 
 interface Estudiante {
     id: number;
@@ -13,8 +15,10 @@ interface Estudiante {
 const estudiantes: Estudiante[] = [];
 let siguienteId = 1;
 
-// GET: mostrar todos los estudiantes
+
+//get_mostrar_todo
 router.get("/", (req, res) => {
+    const bootcamp = req.query.bootcamp;
     // #swagger.tags = ['Estudiantes']
     // #swagger.summary = 'Listas de estudiantes'
     // #swagger.description = 'Obtiene todos los estudiantes registrados. Permite filtrar por bootcamp.'
@@ -38,10 +42,15 @@ router.get("/", (req, res) => {
     }
 
     res.json(estudiantes);
+
+
+});
+//sof get
+router.get("/:id", (req, res) => {
+
 });
 
-// GET: buscar estudiante por ID
-router.get("/:id", (req, res) => {
+
     // #swagger.tags = ['Estudiantes']
     // #swagger.summary = 'Buscar estudiante por ID'
     // #swagger.description = 'Busca un estudiante específico utilizando su ID.'
@@ -60,6 +69,7 @@ router.get("/:id", (req, res) => {
     // #swagger.responses[404] = {
     //     description: 'Estudiante no encontrado'
     // }
+
     const id = Number(req.params.id);
 
     if (!Number.isInteger(id) || id <= 0) {
@@ -77,10 +87,15 @@ router.get("/:id", (req, res) => {
     }
 
     res.json(estudiante);
+
+
+});
+//pos
+router.post("/", (req, res) => {
+
 });
 
-// POST: registrar estudiante
-router.post("/", (req, res) => {
+
     // #swagger.tags = ['Estudiantes']
     // #swagger.summary = 'Registrar estudiante'
     // #swagger.description = 'Registra un nuevo estudiante en el sistema.'
@@ -100,6 +115,7 @@ router.post("/", (req, res) => {
     // #swagger.responses[400] = {
     //     description: 'El email es obligatorio'
     // }
+
     const { nombre, email, bootcamp } = req.body;
 
     if (!email) {
@@ -121,8 +137,11 @@ router.post("/", (req, res) => {
     res.status(201).json(nuevoEstudiante);
 });
 
-// PUT: actualizar estudiante
+
+//put
 router.put("/:id", (req, res) => {
+
+
     // #swagger.tags = ['Estudiantes']
     // #swagger.summary = 'Actualizar estudiante'
     // #swagger.description = 'Actualiza los datos de un estudiante utilizando su ID.'
@@ -148,6 +167,7 @@ router.put("/:id", (req, res) => {
     // #swagger.responses[404] = {
     //     description: 'Estudiante no encontrado'
     // }
+
     const id = Number(req.params.id);
     const estudiante = estudiantes.find((e) => e.id === id);
 
@@ -166,6 +186,7 @@ router.put("/:id", (req, res) => {
     res.status(200).json(estudiante);
 });
 
+
 // DELETE: eliminar estudiante
 router.delete("/:id", (req, res) => {
     // #swagger.tags = ['Estudiantes']
@@ -183,6 +204,7 @@ router.delete("/:id", (req, res) => {
     // #swagger.responses[404] = {
     //     description: 'Estudiante no encontrado'
     // }
+
     const id = Number(req.params.id);
     const indice = estudiantes.findIndex((e) => e.id === id);
 
@@ -199,4 +221,6 @@ router.delete("/:id", (req, res) => {
     });
 });
 
+
 export default router;
+
